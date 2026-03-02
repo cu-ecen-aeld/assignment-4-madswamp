@@ -5,7 +5,7 @@
 #
 ##############################################################
 
-AESD_ASSIGNMENTS_VERSION = '5b150e6fff5c7115fb442ae1ad25b15330ff115f'
+AESD_ASSIGNMENTS_VERSION = 'ea54747a640b638ca05b9550d05bccdbf5e0c6b8'
 AESD_ASSIGNMENTS_SITE = 'git@github.com:cu-ecen-aeld/assignments-3-and-later-madswamp.git'
 AESD_ASSIGNMENTS_SITE_METHOD = git
 AESD_ASSIGNMENTS_GIT_SUBMODULES = YES
