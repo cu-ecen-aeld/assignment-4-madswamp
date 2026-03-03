@@ -2,3 +2,7 @@
 build/
 .vscode/
 *.log
+_PipelineMapping/
+_actions/
+_temp/
+assignment-4-madswamp/

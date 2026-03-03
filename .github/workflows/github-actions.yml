@@ -11,14 +11,21 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up SSH for Buildroot package fetch
+      - name: Verify repo access via SSH (no key output)
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          echo "User: $(whoami)"
-          echo "HOME: $HOME"
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > "$HOME/.ssh/id_rsa"
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global core.sshCommand \
-            "ssh -i $HOME/.ssh/id_rsa -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes"
+          set -euo pipefail
+          mkdir -p /root/.ssh
+          chmod 700 /root/.ssh
+          ssh-keygen -f /root/.ssh/known_hosts -R github.com || true
+          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts
+          chmod 600 /root/.ssh/known_hosts
+          printf '%s\n' "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
+          chmod 600 /root/.ssh/id_ed25519
+
+          GIT_SSH_COMMAND="ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes" \
+            git ls-remote git@github.com:cu-ecen-aeld/assignments-3-and-later-madswamp.git HEAD
+
       - run: ./full-test.sh
