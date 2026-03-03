@@ -34,7 +34,7 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
           chmod 600 /root/.ssh/id_ed25519
 
-          # Quick check: should authenticate as your GitHub user (e.g., madswamp)
+          # Quick check: should authenticate as your GitHub user
           ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes -T git@github.com || true
 
       - name: Validate private key format (root)
@@ -44,9 +44,8 @@ jobs:
           ssh-keygen -lf /root/.ssh/id_ed25519 >/dev/null
           echo "Key parses OK"
 
-      # - name: Run full test
-      #   shell: bash
-      #   env:
-      #     # Force all git SSH operations (including Buildroot download) to use our key
-      #     GIT_SSH_COMMAND: "ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
-      #   run: ./full-test.sh
+      - name: Run full test
+        shell: bash
+        env:
+          GIT_SSH_COMMAND: "ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+        run: ./full-test.sh
