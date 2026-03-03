@@ -11,18 +11,42 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Validate private key format (root)
+      - name: Setup SSH for root (known_hosts + key)
         shell: bash
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
+
           mkdir -p /root/.ssh
+          chmod 700 /root/.ssh
+
+          # Fix/refresh github.com host keys to avoid host key mismatch issues
+          ssh-keygen -f /root/.ssh/known_hosts -R github.com || true
+          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts
+          chmod 600 /root/.ssh/known_hosts
+
+          # Install the private key for root
+          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
+            echo "ERROR: SSH_PRIVATE_KEY secret is empty/not set"
+            exit 1
+          fi
           printf '%s\n' "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
           chmod 600 /root/.ssh/id_ed25519
 
-          # This fails if the key is invalid/corrupted/encrypted in a way SSH can't use non-interactively
+          # Quick check: should authenticate as your GitHub user (e.g., madswamp)
+          ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes -T git@github.com || true
+
+      - name: Validate private key format (root)
+        shell: bash
+        run: |
+          set -euo pipefail
           ssh-keygen -lf /root/.ssh/id_ed25519 >/dev/null
           echo "Key parses OK"
 
-#      - run: ./full-test.sh
+      # - name: Run full test
+      #   shell: bash
+      #   env:
+      #     # Force all git SSH operations (including Buildroot download) to use our key
+      #     GIT_SSH_COMMAND: "ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+      #   run: ./full-test.sh
