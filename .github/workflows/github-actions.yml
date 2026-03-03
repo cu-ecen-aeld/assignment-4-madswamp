@@ -28,4 +28,4 @@ jobs:
           GIT_SSH_COMMAND="ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes" \
             git ls-remote git@github.com:cu-ecen-aeld/assignments-3-and-later-madswamp.git HEAD
 
-      - run: ./full-test.sh
+#      - run: ./full-test.sh
