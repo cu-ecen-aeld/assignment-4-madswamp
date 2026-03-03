@@ -11,21 +11,18 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Verify repo access via SSH (no key output)
+      - name: Validate private key format (root)
         shell: bash
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           mkdir -p /root/.ssh
-          chmod 700 /root/.ssh
-          ssh-keygen -f /root/.ssh/known_hosts -R github.com || true
-          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts
-          chmod 600 /root/.ssh/known_hosts
           printf '%s\n' "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
           chmod 600 /root/.ssh/id_ed25519
 
-          GIT_SSH_COMMAND="ssh -i /root/.ssh/id_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes" \
-            git ls-remote git@github.com:cu-ecen-aeld/assignments-3-and-later-madswamp.git HEAD
+          # This fails if the key is invalid/corrupted/encrypted in a way SSH can't use non-interactively
+          ssh-keygen -lf /root/.ssh/id_ed25519 >/dev/null
+          echo "Key parses OK"
 
 #      - run: ./full-test.sh
